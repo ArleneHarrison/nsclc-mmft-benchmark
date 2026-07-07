@@ -127,7 +127,7 @@ ROWS = [
      "Reported", "Table 5/Fig 8 give a usable nomogram + integer score (separate MLE refit, Section 2.9b); the exact benchmarked ridge-penalised primary model's own coefficients are now tabulated in Table 9 (added in this review; independently refit and confirmed bit-for-bit identical predictions to the original benchmark)."),
     ("13", "D;E", "Class imbalance",
      "Class-imbalance methods used, rationale, recalibration.",
-     "Gap", "The cohort is moderately imbalanced (110 adeno / 145 squamous, ~43:57) and the actual code applies scikit-learn class_weight=\"balanced\" for every logistic-regression/SVM/tree model — but this is never stated in the manuscript text. Recommend one sentence in Section 2.5/2.6 disclosing this."),
+     "Reported", "Fixed in this review: Sections 2.5/2.6 now disclose that balanced (inverse-frequency) class weights were used for LASSO/ridge/SVM/random-forest, while gradient-boosted and Transformer-based models used unweighted training (each method's default)."),
     ("14", "D;E", "Fairness",
      "Approaches to address model fairness, rationale.",
      "Partial", "Newly added Limitation 4.6(12) (this review) discloses that squamous cases are 95.2% male and the female-squamous subgroup (7/145 overall, 1/77 in the test set) is too small to support any subgroup performance estimate. No formal fairness-mitigation approach was applied (nor would one be appropriate at this subgroup size) — disclosure, not correction, is the honest option here."),
@@ -159,7 +159,7 @@ ROWS = [
      "Reported", "Data Availability Statement — all three source datasets are public with citations; derived tables in S1 Data."),
     ("18f", "D;E", "Code sharing",
      "Availability of analytical code.",
-     "Gap", "ACTION NEEDED. manuscript.md states code is 'available in the study repository' but the submission docx's Data Availability Statement does not mention code at all, and no public code URL/DOI (GitHub, Zenodo, etc.) appears anywhere in the package. TRIPOD+AI (and PLOS ONE's own guidance) explicitly discourage vague 'available on request' language. Recommend depositing the scripts/ directory to a citable public repository before submission and adding its DOI/URL here."),
+     "Reported", "Resolved in this review: all analysis code (scripts/, tests/) published under MIT license at https://github.com/ArleneHarrison/nsclc-mmft-benchmark. URL added to the Data Availability Statement (manuscript body Section 2.10, standalone Data Availability Statement, and Submission_Metadata_and_Required_Statements.docx)."),
 
     ("PATIENT & PUBLIC INVOLVEMENT", None, None, None, None, None),
     ("19", "D;E", "PPI",
@@ -316,17 +316,20 @@ def main() -> None:
     doc.add_paragraph()
     summary = doc.add_paragraph()
     summary.add_run(
-        "Summary: of 52 applicable line items (34 Reported, 7 Partial, 7 Gap, 4 N/A), most "
+        "Summary: of 52 applicable line items (36 Reported, 7 Partial, 5 Gap, 4 N/A), most "
         "Methods/Results/Discussion items are fully "
         "reported (this manuscript's methodological transparency is above average for the "
-        "genre). Items fixed as part of this review: (12c/13) class_weight=\"balanced\" usage "
-        "is now disclosed in Methods; (14/4.6) a new Limitation discloses that the "
+        "genre). Items fixed as part of this review: (13) class_weight=\"balanced\" usage is "
+        "now disclosed in Methods 2.5/2.6; (14/4.6) a new Limitation discloses that the "
         "female-squamous subgroup is too small (7/145 overall, 1/77 in the test set) to "
         "support any subgroup performance estimate; (22/12g) the exact benchmarked primary "
         "model's standardized coefficients are now tabulated in Table 9; (18c/18d/19) explicit "
-        "protocol/registration/PPI statements were added. The one remaining concrete gap "
-        "requiring an author decision is (18f): no public code repository is cited despite "
-        "the paper's leakage-free/reproducibility emphasis."
+        "protocol/registration/PPI statements were added; (18f) analysis code is now published "
+        "at https://github.com/ArleneHarrison/nsclc-mmft-benchmark (MIT license) and cited in "
+        "the Data Availability Statement. The remaining gaps (3c health inequalities, 5b "
+        "accrual dates, 8b/8c outcome-assessor qualifications/blinding, 27a deployment-time "
+        "data-quality handling) reflect inherent limits of a secondary analysis of an "
+        "already-published public cohort and are not independently fixable from this dataset."
     ).font.size = Pt(9)
 
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)

@@ -52,7 +52,8 @@ DATA_AVAILABILITY = (
     "are available from the UCSC Xena GDC hub. TCIA NSCLC-Radiogenomics data "
     "are available from The Cancer Imaging Archive. Derived source tables used "
     "to generate the figures, tables, and supplementary analyses are included "
-    "in S1 Data in this submission package."
+    "in S1 Data in this submission package. Analysis code is publicly available "
+    "at https://github.com/ArleneHarrison/nsclc-mmft-benchmark (MIT license)."
 )
 FUNDING = "The authors received no specific funding for this work."
 COMPETING = "The authors have declared that no competing interests exist."
@@ -60,7 +61,11 @@ ETHICS = (
     "This study used only publicly available, de-identified data. No "
     "institutional patient data were collected or analysed; no additional "
     "ethics approval or data-use agreement was required beyond the public "
-    "repositories' terms of use."
+    "repositories' terms of use. This study was not pre-registered and no "
+    "formal study protocol was prepared prior to analysis. As a secondary "
+    "analysis of publicly available, de-identified data, no patients or "
+    "members of the public were involved in the design, conduct, reporting, "
+    "or dissemination of this study."
 )
 AUTHOR_CONTRIBUTIONS = (
     "Zhiyong Tao: Conceptualization, Data curation, Formal analysis, "
