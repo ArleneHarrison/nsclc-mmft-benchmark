@@ -1,0 +1,16 @@
+numpy==2.4.3
+pandas==2.3.3
+scipy==1.17.1
+scikit-learn==1.6.1
+statsmodels==0.14.6
+torch==2.11.0
+xgboost==3.2.0
+lightgbm==4.6.0
+shap==0.51.0
+gseapy==1.2.1
+lifelines==0.30.3
+matplotlib==3.10.9
+seaborn==0.13.2
+python-docx==1.2.0
+Pillow==12.2.0
+xenaPython==1.0.14
