@@ -2,9 +2,10 @@
 
 Analysis code for:
 
-> Tao Z, Zhang Y, Fan G. **Regularized Linear Models Match Multimodal Deep Learning for
-> NSCLC Histological-Subtype Prediction: A Leakage-Free, Two-Cohort, Three-Modality
-> Benchmark With Transcriptomic Validation.** (submitted to PLOS ONE).
+> Tao Z, Zhang Y, Fan G. **No Detectable Advantage of Multimodal Deep Learning Over
+> Regularized Linear Models for NSCLC Histological-Subtype Prediction: A
+> Leakage-Controlled Multicohort Benchmark.** (under revision at PLOS ONE;
+> manuscript PONE-D-26-33174).
 
 The study asks whether high-dimensional radiomics or multimodal deep learning
 outperform a well-regularized linear model when predicting lung adenocarcinoma vs.
@@ -54,16 +55,30 @@ downloading the public data above; scripts will not run standalone without it.
 |---|---|
 | Primary benchmark (ridge, LASSO, SVM, RF, XGBoost, LightGBM, FT-Transformer, MMFT) | `benchmark_petct_blood_models.py`, `train_ft_transformer_petct.py`, `train_mmft_transformer_petct.py`, `final_mmft_rank_refit.py` |
 | Model-optimization / estimate-stability analyses (repeated hold-out, elastic-net, radiomics signature, stacking, recalibration, learning curve, subgroups) | `model_optimization.py`, `supplementary_experiments.py` |
+| Revision audit (fully nested preprocessing/selection, 50 paired PET-increment splits, separate bootstrap intervals, multiplicity, operating thresholds, predictor correlations) | `revision_r1_analysis.py` |
 | Leakage-free MMFT architecture/hyperparameter search | `mmft_architecture_search.py`, `mmft_stability_comparison.py` |
 | TCGA-guided mechanistic-token idea (incl. bug-postmortem redo) | `mmft_biology_guided.py`, `mmft_named_tokens.py`, `mmft_search_with_biology_tokens.py`, `mmft_token_ablation.py` |
 | TabPFN comparator | `tabpfn_comparator.py` |
-| TCGA transcriptomic biology + unbiased 50-pathway GSEA | `fetch_tcga_hallmark_expression.py`, `tcga_hallmark_gsea.py` |
+| TCGA transcriptomic biology + 50-pathway GSEA restricted to primary tumors (sample-type code 01) | `fetch_tcga_hallmark_expression.py`, `tcga_hallmark_gsea.py`, `make_revision_gsea_figure.py` |
 | TCIA independent-cohort replication (baseline associations, EGFR/KRAS) | `independent_cohort_plausibility.py` |
 | TCIA CT semantic-phenotype benchmark (histology + recurrence) | `extract_aim_features.py`, `parse_aim_semantic_features.py`, `tcia_recurrence_data_prep.py`, `tcia_histology_classical_benchmark.py`, `tcia_histology_mmft.py`, `tcia_recurrence_classical_benchmark.py` |
 | Clinical nomogram / simplified integer score | `create_nomogram.R` |
 | Baseline table, public-model screening | `make_table1_baseline.py`, `analyze_public_model.R` |
 | Figure generation | `create_supplementary_figures.py`, `create_mmft_shap_figures.py`, `create_tcga_external_bioinfo_figures.py`, `reproduce_reference_style_figures.py`, `make_*_figure.py`, `label_gptimage2_*.py` |
 | Manuscript/submission-package assembly | `md_docx_render.py`, `build_final_docs.py`, `create_plos_one_submission_package.py`, `create_tripod_ai_checklist.py`, `create_*_docx.py` |
+
+## Revision reproducibility note
+
+The revision audit keeps imputation, variance filtering, standardization,
+`SelectKBest`, and ridge regression inside one scikit-learn `Pipeline`. The full
+pipeline is fitted independently inside every inner and outer cross-validation
+fold. `revision_r1_analysis.py` writes the selected variables and tuning choices
+for each outer fold, along with the paired repeated-split and bootstrap audit
+tables used in the revision.
+
+The TCGA GSEA scripts now explicitly retain only primary-tumor aliquots (TCGA
+sample-type code 01). Adjacent-normal and recurrent-tumor aliquots are excluded,
+yielding 528 LUAD and 501 LUSC primary tumors.
 
 ## Dependencies
 

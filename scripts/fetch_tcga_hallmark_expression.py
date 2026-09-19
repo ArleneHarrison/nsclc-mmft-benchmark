@@ -51,8 +51,9 @@ def fetch_batch_with_retry(dataset, samples, batch, max_retries=8):
 
 
 def fetch_cohort(cohort_name: str, dataset: str, genes: list[str], out_path: Path, batch_size: int = 200) -> pd.DataFrame:
-    samples = call_with_retry(xena.dataset_samples, HOST, dataset, None)
-    print(f"  {cohort_name}: {len(samples)} samples")
+    all_samples = call_with_retry(xena.dataset_samples, HOST, dataset, None)
+    samples = [s for s in all_samples if len(s) >= 15 and s[13:15] == "01"]
+    print(f"  {cohort_name}: {len(samples)} primary-tumor samples (from {len(all_samples)} total aliquots)")
 
     partial_path = out_path.with_suffix(".partial.csv")
     done_frames = []

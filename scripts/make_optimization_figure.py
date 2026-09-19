@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ from matplotlib.gridspec import GridSpec
 
 ROOT = Path(__file__).resolve().parents[1]
 OPT = ROOT / "outputs" / "model_optimization"
-OUTDIR = ROOT / "outputs" / "supplementary_figures"
+OUTDIR = Path(os.environ.get("PLOS_REVISION_OUT", ROOT / "outputs" / "supplementary_figures"))
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 INK = "#1f2937"; BLUE = "#2166ac"; RED = "#b2182b"; GREEN = "#4d9221"; AMBER = "#d9a441"; GRID = "#d7dbe0"
@@ -24,6 +25,7 @@ summary = json.loads((OPT / "model_optimization_summary.json").read_text(encodin
 rep = np.loadtxt(OPT / "repeated_holdout_aucs.csv", delimiter=",", skiprows=1)
 lc = pd.read_csv(OPT / "learning_curve.csv")
 sub = pd.read_csv(OPT / "subgroup_by_stage.csv")
+sub["subgroup"] = sub["subgroup"].str.replace(r"\s*\(likely III[A-C]\)", "", regex=True)
 
 fig = plt.figure(figsize=(14, 10))
 gs = GridSpec(2, 2, figure=fig, hspace=0.42, wspace=0.28, left=0.08, right=0.97, top=0.90, bottom=0.09)
@@ -33,11 +35,11 @@ axA = fig.add_subplot(gs[0, 0])
 axA.hist(rep, bins=14, color=BLUE, alpha=0.75, edgecolor="white")
 rh = summary["repeated_holdout_50splits"]
 axA.axvline(summary["primary_reference"]["test_auc"], color=RED, lw=2.2, ls="-",
-            label=f"single lucky split = {summary['primary_reference']['test_auc']:.3f}")
+            label=f"prespecified held-out split = {summary['primary_reference']['test_auc']:.3f}")
 axA.axvline(rh["mean"], color=BLUE, lw=2.2, ls="-", label=f"50-split mean = {rh['mean']:.3f}")
 axA.axvline(0.778, color=GREEN, lw=1.8, ls="--", label="nested-CV = 0.778 (independent method)")
 axA.set_xlabel("Test AUC"); axA.set_ylabel("Count of splits (n=50)")
-axA.set_title("A  Repeated hold-out: is 0.854 a lucky split?", loc="left")
+axA.set_title("A  Repeated hold-out distribution", loc="left")
 axA.legend(fontsize=8.2, loc="upper left", frameon=False)
 for s in ["top", "right"]:
     axA.spines[s].set_visible(False)
@@ -62,7 +64,7 @@ for x, (name, auc, p, c) in zip(xs, attempts):
 axB.axhline(summary["primary_reference"]["test_auc"], color=INK, ls=":", lw=1.1)
 axB.set_xticks(xs); axB.set_xticklabels([a[0] for a in attempts], fontsize=8.8)
 axB.set_ylim(0.5, 1.0); axB.set_ylabel("Test AUC")
-axB.set_title("B  Three optimization attempts vs primary (DeLong p)", loc="left")
+axB.set_title("B  Optimization attempts vs primary (exploratory DeLong p)", loc="left")
 for s in ["top", "right"]:
     axB.spines[s].set_visible(False)
 
@@ -93,7 +95,7 @@ axD.set_yticks(ys); axD.set_yticklabels(sub["subgroup"], fontsize=9)
 axD.set_xlim(0.4, 1.05); axD.set_xlabel("Test AUC (95% bootstrap CI)")
 axD.set_title("D  Subgroup stability by stage substratum", loc="left")
 axD.text(0.02, -0.22, "All 255 patients are AJCC Stage III per source inclusion criteria;\n"
-         "the dataset's 1/2/3 code likely denotes IIIA/IIIB/IIIC (not overall stage I/II/III).",
+         "the public files do not document how raw codes 1/2/3 map to substages.",
          transform=axD.transAxes, fontsize=7.3, color="#616161", va="top")
 for s in ["top", "right"]:
     axD.spines[s].set_visible(False)

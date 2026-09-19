@@ -18,7 +18,7 @@ from statsmodels.stats.multitest import multipletests
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "public_data" / "tcga_xena_lung_external"
-OUT_DIR = ROOT / "outputs" / "model_optimization"
+OUT_DIR = ROOT / "outputs" / "PONE-D-26-33174_revision_20260919" / "analysis" / "tcga_primary_tumor_gsea"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # a priori axes already used in this project (§8), for cross-referencing
@@ -33,7 +33,13 @@ A_PRIORI_INFLAMMATORY = ["Inflammatory Response", "TNF-alpha Signaling via NF-kB
 def main():
     luad = pd.read_csv(DATA_DIR / "TCGA_LUAD_hallmark_genes_tpm.csv", index_col=0)
     lusc = pd.read_csv(DATA_DIR / "TCGA_LUSC_hallmark_genes_tpm.csv", index_col=0)
-    print(f"LUAD: {luad.shape}, LUSC: {lusc.shape}")
+    # GDC/Xena cohort matrices also contain adjacent-normal (code 11) and,
+    # occasionally, recurrent-tumor (code 02) aliquots. Restrict both cohorts
+    # to primary tumors (TCGA sample-type code 01) so the pathway analysis uses
+    # the same 528 LUAD and 501 LUSC tumors as the curated-gene analysis.
+    luad = luad.loc[[idx for idx in luad.index if len(str(idx)) >= 15 and str(idx)[13:15] == "01"]]
+    lusc = lusc.loc[[idx for idx in lusc.index if len(str(idx)) >= 15 and str(idx)[13:15] == "01"]]
+    print(f"Primary tumors only -- LUAD: {luad.shape}, LUSC: {lusc.shape}")
 
     common_genes = [g for g in luad.columns if g in lusc.columns]
     luad = luad[common_genes]; lusc = lusc[common_genes]

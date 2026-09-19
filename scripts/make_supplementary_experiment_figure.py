@@ -11,6 +11,7 @@ Panels (all real numbers):
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -23,7 +24,7 @@ from sklearn.metrics import roc_auc_score
 ROOT = Path(__file__).resolve().parents[1]
 SUP = ROOT / "outputs" / "supplementary_experiments"
 BENCH = ROOT / "server_results" / "petct_blood_benchmark"
-OUTDIR = ROOT / "outputs" / "supplementary_figures"
+OUTDIR = Path(os.environ.get("PLOS_REVISION_OUT", ROOT / "outputs" / "supplementary_figures"))
 OUTDIR.mkdir(parents=True, exist_ok=True)
 
 INK = "#1f2937"
@@ -79,10 +80,10 @@ axA.set_title("A  Incremental value of modalities", loc="left")
 # DeLong annotations
 d1 = delong["clinical+blood+metabolic(primary) vs clinical+blood"]["delong_p"]
 d2 = delong["+radiomics(all) vs clinical+blood+metabolic(primary)"]["delong_p"]
-axA.annotate(f"metabolic adds signal\nDeLong p={d1:.3f} *", xy=(0.78, ys[2]),
+axA.annotate(f"modest, borderline PET increment\nraw p={d1:.3f}; Holm p=0.136", xy=(0.78, ys[2]),
              xytext=(0.50, ys[2] + 0.35), fontsize=8.5, color=RED,
              arrowprops=dict(arrowstyle="->", color=RED, lw=1.2))
-axA.annotate(f"radiomics hurts\nDeLong p={d2:.3f} *", xy=(0.72, ys[3]),
+axA.annotate(f"held-out radiomics decrease\nraw p={d2:.3f}; Holm p=0.136", xy=(0.72, ys[3]),
              xytext=(0.50, ys[3] + 0.30), fontsize=8.5, color="#616161",
              arrowprops=dict(arrowstyle="->", color="#616161", lw=1.2))
 axA.set_ylim(-0.6, len(labels) - 0.2)
@@ -110,7 +111,7 @@ axB.axhline(0.815, xmin=0.02, xmax=0.98, color="#9aa0a6", ls=":", lw=1.3)
 axB.text(len(models) - 1, 0.815 - 0.02, "FT-Transformer 0.815", ha="right", fontsize=8, color="#616161")
 axB.set_xticks(xs); axB.set_xticklabels([m[0] for m in models], fontsize=9)
 axB.set_ylim(0.5, 1.0); axB.set_ylabel("Hold-out test AUC (95% CI)")
-axB.set_title("B  Deep learning is not superior to ridge", loc="left")
+axB.set_title("B  No detectable deep-learning advantage", loc="left")
 dp = delong["MMFT rank-refit vs Ridge (shared IDs)"]["delong_p"]
 axB.plot([0, 0, 2, 2], [0.94, 0.955, 0.955, 0.94], color=INK, lw=1.1)
 axB.text(1, 0.958, f"DeLong p = {dp:.2f}  (n.s.)", ha="center", fontsize=9)
@@ -131,7 +132,7 @@ axC.text(len(folds) + 0.05, 0.854, "hold-out 0.854", va="center", fontsize=9, co
 axC.text(len(folds) + 0.05, mean, f"nested-CV\n{mean:.3f}±{std:.3f}", va="center", fontsize=9, color=RED)
 axC.set_xticks(xs); axC.set_xticklabels([f"Fold {i}" for i in xs], fontsize=9)
 axC.set_ylim(0.6, 0.95); axC.set_xlim(0.5, len(folds) + 1.4)
-axC.set_ylabel("AUC"); axC.set_title("C  Unbiased nested 5-fold CV (primary)", loc="left")
+axC.set_ylabel("AUC"); axC.set_title("C  Fully nested 5-fold CV (primary)", loc="left")
 for s in ["top", "right"]:
     axC.spines[s].set_visible(False)
 
@@ -163,7 +164,7 @@ axins.set_title("Net benefit", fontsize=8)
 axins.tick_params(labelsize=6)
 axins.legend(fontsize=5.5, loc="upper right", frameon=False)
 
-fig.suptitle("Supplementary experiments: incremental value, honest benchmarking, calibration (PLOS-2024 cohort, n=255)",
+fig.suptitle("Incremental value, model benchmarking, and calibration (PLOS-2024 cohort, n=255)",
              fontsize=13.5, fontweight="bold", y=0.965)
 out = OUTDIR / "FigS7_incremental_value_and_honest_benchmark.png"
 fig.savefig(out, bbox_inches="tight", facecolor="white")
