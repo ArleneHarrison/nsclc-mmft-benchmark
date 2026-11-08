@@ -37,29 +37,29 @@ for x, v, p, c in zip(xs, vals_a, pvals_a, colors_a):
 axA.axhline(0.854, color=INK, ls=":", lw=1.1)
 axA.set_xticks(xs); axA.set_xticklabels(labels_a, fontsize=8.8)
 axA.set_ylim(0.5, 1.0); axA.set_ylabel("Test AUC")
-axA.set_title("A  PLOS-2024 cohort (n=255): 4 methods, none beat ridge", loc="left", fontsize=11)
+axA.set_title("A  PLOS-2024: none significantly better than ridge", loc="left", fontsize=11)
 for s in ["top", "right"]:
     axA.spines[s].set_visible(False)
 
 # ---- B: cross-cohort, cross-modality ridge-vs-DL summary ----
 axB = fig.add_subplot(gs[0, 1])
-groups = ["PLOS-2024\nPET+blood\n(n=255)", "TCIA\nCT semantic\n(n=187)"]
-ridge_vals = [0.778, 0.749]   # robust nested-CV estimates for fair cross-cohort comparison
-dl_vals = [0.778, 0.713]      # MMFT nested-CV-comparable robust estimates (PLOS: nested-CV proxy via repeated holdout mean; TCIA: nested-CV)
-ridge_err = [0.048, 0.105]
-dl_err = [0.057, 0.108]
+groups = ["TCIA\nCT semantic\n(n=187)"]
+ridge_vals = [0.749]
+dl_vals = [0.713]
+ridge_err = [0.105]
+dl_err = [0.108]
 x = np.arange(len(groups))
 w = 0.32
 axB.bar(x - w/2, ridge_vals, width=w, yerr=ridge_err, color=INK, alpha=0.85, capsize=4, label="Ridge logistic (robust estimate)")
-axB.bar(x + w/2, dl_vals, width=w, yerr=dl_err, color=RED, alpha=0.85, capsize=4, label="Best deep-learning attempt (robust estimate)")
+axB.bar(x + w/2, dl_vals, width=w, yerr=dl_err, color=RED, alpha=0.85, capsize=4, label="MMFT (nested CV)")
 for xi, (rv, dv) in enumerate(zip(ridge_vals, dl_vals)):
     axB.text(xi - w/2, rv + ridge_err[xi] + 0.02, f"{rv:.3f}", ha="center", fontsize=9)
     axB.text(xi + w/2, dv + dl_err[xi] + 0.02, f"{dv:.3f}", ha="center", fontsize=9)
 axB.set_xticks(x); axB.set_xticklabels(groups, fontsize=9.5)
 axB.set_ylim(0.4, 1.0); axB.set_ylabel("Test AUC (robust estimate ± SD)")
 axB.legend(fontsize=8.5, loc="upper right", frameon=False)
-axB.set_title("B  2 independent cohorts, 3 feature modalities: same answer", loc="left", fontsize=11)
-axB.text(0.5, -0.22, "Robust estimates: PLOS-2024 nested-CV/repeated hold-out; TCIA nested-CV (5x5, 3-4 repeats).\nDeep learning never exceeds the simple model once evaluated without leakage.",
+axB.set_title("B  Independent TCIA CT-semantic benchmark", loc="left", fontsize=11)
+axB.text(0.5, -0.22, "TCIA nested CV (5x5, 3-4 repeats); error bars show SD, not confidence intervals.\nThe PLOS-2024 cohort appears only in panel A; no ridge estimate is used as an MMFT proxy.",
           transform=axB.transAxes, ha="center", fontsize=8, color="#616161")
 for s in ["top", "right"]:
     axB.spines[s].set_visible(False)

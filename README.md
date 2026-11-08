@@ -2,18 +2,20 @@
 
 Analysis code for:
 
-> Tao Z, Zhang Y, Fan G. **No Detectable Advantage of Multimodal Deep Learning Over
-> Regularized Linear Models for NSCLC Histological-Subtype Prediction: A
-> Leakage-Controlled Multicohort Benchmark.** (under revision at PLOS ONE;
+> **Predicting NSCLC Histological Subtype from Clinical, Blood, and PET/CT Data:
+> A Leakage-Controlled Two-Cohort Comparison of Regularized Linear and
+> Multimodal Deep Learning Models.** (under revision at PLOS ONE;
 > manuscript PONE-D-26-33174).
 
 The study asks whether high-dimensional radiomics or multimodal deep learning
 outperform a well-regularized linear model when predicting lung adenocarcinoma vs.
 squamous-cell carcinoma from pretreatment clinical, blood-inflammatory, and
-¹⁸F-FDG PET-metabolic data at realistic sample size (n≈255). Under strict leakage-free
-model selection, across two independent public cohorts and three structurally
-distinct feature modalities, ridge-logistic regression was never outperformed by
-deep learning. The repository also includes the TCGA transcriptomic validation
+¹⁸F-FDG PET-metabolic data at realistic sample size (n≈255). The analyses found no
+detectable deep-learning advantage over the designated ridge model; this is not
+evidence of equivalence. The primary PET/blood prediction model has internal
+evaluation only. The independent TCIA cohort supports clinical associations and
+a separate CT-semantic benchmark, not external validation of the PET/blood AUC.
+The repository also includes the TCGA transcriptomic plausibility analyses
 (including an unbiased 50-pathway GSEA), the TCIA independent-cohort replication,
 and the clinical nomogram / integer-score translation reported in the paper.
 
@@ -56,6 +58,8 @@ downloading the public data above; scripts will not run standalone without it.
 | Primary benchmark (ridge, LASSO, SVM, RF, XGBoost, LightGBM, FT-Transformer, MMFT) | `benchmark_petct_blood_models.py`, `train_ft_transformer_petct.py`, `train_mmft_transformer_petct.py`, `final_mmft_rank_refit.py` |
 | Model-optimization / estimate-stability analyses (repeated hold-out, elastic-net, radiomics signature, stacking, recalibration, learning curve, subgroups) | `model_optimization.py`, `supplementary_experiments.py` |
 | Revision audit (fully nested preprocessing/selection, 50 paired PET-increment splits, separate bootstrap intervals, multiplicity, operating thresholds, predictor correlations) | `revision_r1_analysis.py` |
+| Second revision: development-only modality tuning, fully nested CV for all four blocks, smoking audit, historical k=12 CI reconciliation | `r2_analysis_33174.py` |
+| Current revised Figs 1, 2, 3, 5, 6, 9 and S2 | `r2_figures_33174.py` |
 | Leakage-free MMFT architecture/hyperparameter search | `mmft_architecture_search.py`, `mmft_stability_comparison.py` |
 | TCGA-guided mechanistic-token idea (incl. bug-postmortem redo) | `mmft_biology_guided.py`, `mmft_named_tokens.py`, `mmft_search_with_biology_tokens.py`, `mmft_token_ablation.py` |
 | TabPFN comparator | `tabpfn_comparator.py` |
@@ -68,6 +72,16 @@ downloading the public data above; scripts will not run standalone without it.
 | Manuscript/submission-package assembly | `md_docx_render.py`, `build_final_docs.py`, `create_plos_one_submission_package.py`, `create_tripod_ai_checklist.py`, `create_*_docx.py` |
 
 ## Revision reproducibility note
+
+The November 2026 second-revision entry points are `r2_analysis_33174.py` and
+`r2_figures_33174.py`; see [README_R2.txt](README_R2.txt) for paths and commands
+and [requirements-R2.txt](requirements-R2.txt) for the small numerical/plotting
+environment. R2 replaces the old non-nested modality column with fully nested
+mean/SD estimates and selects holdout configurations on the 178 development
+patients only. The previously examined holdout is a reanalysis, not an untouched
+new test. The fixed-k/C 50-split result is split sensitivity, not independent
+unbiased validation. Earlier scripts/outputs should be interpreted as historical
+unless explicitly selected by these R2 entry points.
 
 The revision audit keeps imputation, variance filtering, standardization,
 `SelectKBest`, and ridge regression inside one scikit-learn `Pipeline`. The full

@@ -6,10 +6,10 @@ using the SAME preprocessing / split conventions as
 scripts/benchmark_petct_blood_models.py so results are consistent.
 
 Adds the honest, publication-necessary analyses that were missing:
-  1. Repeated stratified 5-fold CV (unbiased) with 95% CI for incremental
+  1. Fully nested repeated stratified 5-fold CV with descriptive fold percentiles for incremental
      feature blocks: clinical -> +blood/inflammatory -> +metabolic (primary)
      -> +radiomics.
-  2. Nested CV unbiased AUC for the primary model.
+  2. Fully nested CV AUC for the primary feature block.
   3. Locked 30% hold-out test AUC + bootstrap 95% CI per block.
   4. DeLong test between consecutive feature blocks on the shared test set
      (the "incremental value" claim) and for MMFT-vs-ridge if IDs align.
@@ -243,7 +243,7 @@ def main():
     y_tr, y_te = y[tr_idx], y[te_idx]
 
     # ===================================================================== #
-    # 1 + 3: Repeated CV (unbiased) + hold-out test + bootstrap CI per block
+    # 1 + 3: Nested repeated CV + development-tuned holdout + bootstrap CI
     # ===================================================================== #
     rcv = RepeatedStratifiedKFold(n_splits=5, n_repeats=20, random_state=RANDOM_STATE)
     block_rows = []
@@ -252,17 +252,15 @@ def main():
         X = df[feats].apply(pd.to_numeric, errors="coerce")
         kg = k_grid_for(len(feats))
 
-        # unbiased repeated-CV AUC over full cohort with a fixed reasonable config
-        # (tune once on full data via inner search only to pick k/C, then honest
-        #  estimate = mean over repeated CV folds using that config's oof preds)
+        # Holdout configuration selection sees development patients only.
         base = tuned_search(kg)
-        base.fit(X, y)
+        base.fit(X.iloc[tr_idx], y_tr)
         best_k = base.best_params_["select__k"]
         best_c = base.best_params_["model__C"]
-        # unbiased repeated-CV AUC distribution: refit the chosen config per fold
+        # Re-select k/C within every outer-training fold as well as refitting preprocessing.
         fold_aucs = []
         for tri, tei in rcv.split(X, y):
-            fx = make_pipe([best_k]); fx.set_params(select__k=best_k, model__C=best_c)
+            fx = tuned_search(kg)
             fx.fit(X.iloc[tri], y[tri])
             p = fx.predict_proba(X.iloc[tei])[:, 1]
             if len(np.unique(y[tei])) == 2:
@@ -282,8 +280,9 @@ def main():
         block_rows.append({
             "block": name, "n_features": len(feats), "selected_k": best_k, "ridge_C": best_c,
             "repeatedCV_auc_mean": round(cv_mean, 3),
-            "repeatedCV_auc_ci_low": round(float(cv_lo), 3),
-            "repeatedCV_auc_ci_high": round(float(cv_hi), 3),
+            "repeatedCV_auc_sd": round(float(fold_aucs.std()), 3),
+            "repeatedCV_auc_p2_5": round(float(cv_lo), 3),
+            "repeatedCV_auc_p97_5": round(float(cv_hi), 3),
             "holdout_test_auc": round(float(test_auc), 3),
             "holdout_test_ci_low": round(b_lo, 3),
             "holdout_test_ci_high": round(b_hi, 3),
@@ -328,7 +327,7 @@ def main():
     pd.DataFrame(delong_rows).to_csv(OUT_DIR / "S2_delong_incremental.csv", index=False, encoding="utf-8-sig")
 
     # ===================================================================== #
-    # 2: Nested CV unbiased AUC for the primary block
+    # 2: Fully nested CV AUC for the primary block
     # ===================================================================== #
     Xp = df[blocks["clinical+blood+metabolic(primary)"]].apply(pd.to_numeric, errors="coerce")
     kgp = k_grid_for(Xp.shape[1])
@@ -381,7 +380,7 @@ def main():
              block_df.to_string(index=False), "",
              "## S2. DeLong incremental value (shared 30% test set)", "",
              pd.DataFrame(delong_rows).to_string(index=False), "",
-             "## Nested CV (primary block, unbiased)", "",
+             "## Fully nested CV (primary block)", "",
              json.dumps(nested, ensure_ascii=False), "",
              "## Calibration (primary block, hold-out test)", "",
              json.dumps(calib, ensure_ascii=False), ""]
